@@ -1,0 +1,31 @@
+# Python/Django
+venv/
+env/
+.env
+db.sqlite3
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+staticfiles/
+media/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+htmlcov/
+.coverage
+.tox/
+
+# Config/Secrets
+config/secrets.py  # Если есть
+local_settings.py
