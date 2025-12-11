@@ -7,19 +7,19 @@
 
 <div class="task-list" style="padding: 30px 40px; max-width: 600px;">
     <div style="background: #fff9e6; border-left: 4px solid #cc8800; padding: 20px; margin-bottom: 30px;">
-        <div style="color: #cc8800; font-weight: 600; margin-bottom: 12px; font-size: 13px;">⚠️ WARNING</div>
+        <div style="color: #cc8800; font-weight: 600; margin-bottom: 12px; font-size: 13px;">WARNING</div>
         <p style="margin-bottom: 15px; line-height: 1.6;">
-            Ты уверен, что хочешь удалить задачу <strong>"{{ task.title }}"</strong>?
+            Are you sure you want to delete <strong>"{{ task.title }}"</strong>?
         </p>
         <div style="border-top: 1px dashed #d0dce8; padding-top: 15px; color: #1a2b3c;">
             <div style="font-size: 12px; margin-bottom: 8px;">TASK_INFO:</div>
             <ul style="list-style: none; padding-left: 20px; font-size: 12px;">
-                <li style="margin-bottom: 5px;">→ название: <strong>{{ task.title }}</strong></li>
+                <li style="margin-bottom: 5px;">→ Name: <strong>{{ task.title }}</strong></li>
                 {% if task.category %}
-                    <li style="margin-bottom: 5px;">→ категория: <strong>{{ task.category.name }}</strong></li>
+                    <li style="margin-bottom: 5px;">→ Category: <strong>{{ task.category.name }}</strong></li>
                 {% endif %}
                 <li style="margin-bottom: 5px;">
-                    → статус: 
+                    → Status:
                     {% if task.is_done %}
                         <span style="color: #00aa88;">COMPLETED</span>
                     {% else %}
