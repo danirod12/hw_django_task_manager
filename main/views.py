@@ -125,18 +125,26 @@ def category_update(request, pk):
 
 @login_required
 def category_delete(request, pk):
-    """Функция 2.1.2.4 — Удаление категории (с каскадным удалением задач)"""
     category = get_object_or_404(Category, pk=pk)
 
     if request.method == "POST":
-        # on_delete=models.CASCADE автоматически удалит все задачи в этой категории
+        action = request.POST.get('action')
+
+        if action == 'delete_tasks':
+            # Удаляем все задачи в этой категории
+            Task.objects.filter(category=category).delete()
+        elif action == 'detach_tasks':
+            # Открепляем задачи (убираем категорию)
+            Task.objects.filter(category=category).update(category=None)
+
+        # Удаляем саму категорию
         category.delete()
         return redirect('categories_list')
 
-    # Передаём количество задач для предупреждения
-    task_count = category.tasks.count()
-    return render(
-        request,
-        "category_confirm_delete.html",
-        {"category": category, "task_count": task_count}
-    )
+    # Считаем количество задач в категории
+    tasks_count = category.tasks.count()
+
+    return render(request, "category_confirm_delete.html", {
+        "category": category,
+        "tasks_count": tasks_count,
+    })
