@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <span class="content-title">CATEGORIES<span class="cursor"></span></span>
+    <a href="{% url 'category_create' %}" class="create-btn">NEW_CATEGORY</a>
+</div>
+
+<div class="task-list">
+    {% if categories %}
+        <div class="categories-grid">
+            {% for category in categories %}
+                <div class="category-card">
+                    <div class="category-name">{{ category.name }}</div>
+                    {% if category.description %}
+                        <div class="category-desc">{{ category.description }}</div>
+                    {% endif %}
+                    <div class="category-count">
+                        {{ category.task_count }} TASK{{ category.task_count|pluralize }}
+                    </div>
+                    <div class="category-actions">
+                        <a href="{% url 'category_update' category.pk %}">EDIT</a>
+                        <a href="{% url 'category_delete' category.pk %}" class="delete">DELETE</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-msg">Категорий пока нет. Создайте первую!</div>
+    {% endif %}
+</div>
+{% endblock %}

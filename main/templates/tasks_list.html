@@ -1,660 +1,96 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OnlyTasks</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends 'base.html' %}
 
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: #f0f4f8;
-            color: #1a2b3c;
-            font-size: 13px;
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+{% block content %}
+<div class="content-header">
+    <span class="content-title">TASK_LIST<span class="cursor"></span></span>
+    <a href="{% url 'task_create' %}" class="create-btn">NEW_TASK</a>
+</div>
 
-        /* основной грид */
-        .wrapper {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            grid-template-rows: auto 1fr auto;
-            grid-template-areas:
-                "header header"
-                "sidebar main"
-                "footer footer";
-            min-height: 100vh;
-            gap: 1px;
-            background: #a0b4c8;
-        }
+<div class="task-list">
+    <!-- таблица для десктопа -->
+    <table class="task-table">
+        <thead>
+            <tr>
+                <th style="width: 60px;">ID</th>
+                <th>TASK_NAME</th>
+                <th style="width: 100px;">CATEGORY</th>
+                <th style="width: 140px;">STATUS</th>
+                <th style="width: 140px;">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td><span class="task-id">{{ task.pk }}</span></td>
+                <td><span class="task-name">{{ task.title }}</span></td>
+                <td>
+                    {% if task.category %}
+                        <span style="color: #0088cc; font-size: 11px;">{{ task.category.name }}</span>
+                    {% else %}
+                        <span style="color: #a0b4c8; font-size: 11px;">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.is_done %}
+                    <span class="status-badge status-done">DONE</span>
+                    {% else %}
+                    <span class="status-badge status-pending">PENDING</span>
+                    {% endif %}
+                </td>
+                <td class="task-actions">
+                    <a href="{% url 'task_update' task.pk %}" class="action-edit">EDIT</a>
+                    <a href="{% url 'task_delete' task.pk %}" class="action-delete">DEL</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-msg">Задач пока нет. Создайте первую!</div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        /* шапка */
-        .header {
-            grid-area: header;
-            background: #1a2b3c;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .logo-only { color: #fff; }
-        .logo-tasks { color: #0088cc; }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-info {
-            color: #6a8fa8;
-            font-size: 12px;
-        }
-        .user-info span { color: #0088cc; }
-
-        .auth-btn {
-            background: none;
-            border: 1px solid #0088cc;
-            color: #0088cc;
-            padding: 6px 16px;
-            font-family: inherit;
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .auth-btn:hover {
-            background: #0088cc;
-            color: #fff;
-        }
-
-        /* кнопка меню для мобилок */
-        .menu-btn {
-            display: none;
-            background: none;
-            border: 1px solid #0088cc;
-            color: #0088cc;
-            padding: 8px 12px;
-            font-family: inherit;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        /* сайдбар */
-        .sidebar {
-            grid-area: sidebar;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel {
-            border-bottom: 1px solid #d0dce8;
-        }
-
-        .panel-header {
-            background: #e8f0f8;
-            padding: 10px 15px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #0088cc;
-            letter-spacing: 1px;
-            border-left: 3px solid #0088cc;
-        }
-
-        .panel-content {
-            padding: 15px;
-        }
-
-        .spacer { flex: 1; }
-
-        /* фильтры */
-        .filter-group { margin-bottom: 15px; }
-
-        .filter-label {
-            display: block;
-            font-size: 10px;
-            color: #6a8fa8;
-            margin-bottom: 5px;
-        }
-        .filter-label::before {
-            content: '> ';
-            color: #0088cc;
-        }
-
-        .filter-select, .filter-input {
-            width: 100%;
-            background: #f5f9fc;
-            border: 1px solid #d0dce8;
-            padding: 8px 10px;
-            font-family: inherit;
-            font-size: 12px;
-            color: #1a2b3c;
-        }
-        .filter-select:focus, .filter-input:focus {
-            outline: none;
-            border-color: #0088cc;
-        }
-
-        .filter-input::placeholder { color: #a0b4c8; }
-
-        .filter-btn {
-            width: 100%;
-            background: #0088cc;
-            border: none;
-            color: #fff;
-            padding: 10px;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .filter-btn:hover { background: #006699; }
-        .filter-btn::before { content: '[ '; }
-        .filter-btn::after { content: ' ]'; }
-
-        /* статистика */
-        .stats-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #d0dce8;
-            font-size: 12px;
-        }
-        .stats-item:last-child { border-bottom: none; }
-        .stats-label { color: #6a8fa8; }
-        .stats-value { color: #0088cc; font-weight: 600; }
-
-        /* основной контент */
-        .main {
-            grid-area: main;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .content-header {
-            background: #e8f0f8;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #d0dce8;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .content-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1a2b3c;
-        }
-        .content-title::before {
-            content: '// ';
-            color: #0088cc;
-        }
-
-        /* мигающий курсор */
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 14px;
-            background: #0088cc;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 5px;
-        }
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        .create-btn {
-            background: none;
-            border: 2px solid #0088cc;
-            color: #0088cc;
-            padding: 8px 20px;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .create-btn:hover {
-            background: #0088cc;
-            color: #fff;
-        }
-        .create-btn::before { content: '+ '; }
-
-        /* список задач */
-        .task-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px 20px;
-        }
-
-        .task-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .task-table th {
-            text-align: left;
-            padding: 10px 15px;
-            background: #f5f9fc;
-            font-size: 10px;
-            font-weight: 600;
-            color: #6a8fa8;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #d0dce8;
-        }
-
-        .task-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e8f0f8;
-        }
-
-        .task-table tr:hover { background: #f5f9fc; }
-
-        .task-id {
-            color: #a0b4c8;
-            font-size: 11px;
-        }
-        .task-id::before { content: '#'; }
-
-        .task-name {
-            font-weight: 500;
-            color: #1a2b3c;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            font-size: 10px;
-            font-weight: 600;
-            border: 1px solid;
-        }
-        .status-done {
-            color: #00aa88;
-            border-color: #00aa88;
-            background: #e6fff9;
-        }
-        .status-done::before { content: '[OK] '; }
-
-        .status-pending {
-            color: #cc8800;
-            border-color: #cc8800;
-            background: #fff9e6;
-        }
-        .status-pending::before { content: '[..] '; }
-
-        .task-actions a {
-            color: #6a8fa8;
-            text-decoration: none;
-            font-size: 11px;
-            margin-right: 10px;
-        }
-        .task-actions a:hover { color: #0088cc; }
-        .action-edit::before { content: '>'; }
-        .action-delete { color: #cc4444 !important; }
-        .action-delete:hover { color: #f00 !important; }
-        .action-delete::before { content: 'x'; }
-
-        .empty-msg {
-            text-align: center;
-            padding: 60px 20px;
-            color: #a0b4c8;
-        }
-
-        /* пагинация */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            padding: 20px;
-            background: #f5f9fc;
-            border-top: 2px solid #d0dce8;
-        }
-
-        .pagination a {
-            background: #0088cc;
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 25px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .pagination a:hover { background: #006699; }
-
-        .pagination-info {
-            color: #1a2b3c;
-            font-size: 13px;
-            padding: 10px 20px;
-            background: #fff;
-            border: 1px solid #d0dce8;
-        }
-
-        /* футер */
-        .footer {
-            grid-area: footer;
-            background: #1a2b3c;
-            color: #a0b4c8;
-            padding: 8px 20px;
-            display: flex;
-            align-items: center;
-            font-size: 11px;
-            gap: 30px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #00cc88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        /* мобильные карточки */
-        .task-cards { display: none; }
-
-        .task-card {
-            background: #f5f9fc;
-            border: 1px solid #d0dce8;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-
-        .task-card-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .task-card-footer {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #d0dce8;
-        }
-
-        /* оверлей для мобильного меню */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-        .overlay.active { display: block; }
-
-        .close-btn {
-            display: none;
-            background: #cc4444;
-            border: none;
-            color: #fff;
-            padding: 10px 15px;
-            font-family: inherit;
-            font-size: 12px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        /* адаптив */
-        @media (max-width: 900px) {
-            .wrapper {
-                grid-template-columns: 1fr;
-                grid-template-areas: "header" "main" "footer";
-            }
-
-            .sidebar {
-                display: none;
-                position: fixed;
-                top: 0; left: 0;
-                width: 300px;
-                height: 100vh;
-                z-index: 1000;
-                box-shadow: 5px 0 20px rgba(0,0,0,0.2);
-            }
-            .sidebar.active { display: flex; }
-
-            .menu-btn { display: block; }
-            .close-btn { display: block; }
-            .user-info { display: none; }
-        }
-
-        @media (max-width: 600px) {
-            .header { padding: 10px 15px; }
-            .logo { font-size: 16px; }
-            .task-list { padding: 10px 15px; }
-            .task-table { display: none; }
-            .task-cards { display: block; }
-
-            .pagination {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .pagination a { width: 100%; text-align: center; }
-        }
-    </style>
-</head>
-<body>
-    <div class="wrapper">
-        <div class="overlay" id="overlay"></div>
-
-        <!-- шапка -->
-        <header class="header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="menu-btn" id="menuBtn">MENU</button>
-                <div class="logo">
-                    <span class="logo-only">Only</span><span class="logo-tasks">Tasks</span>
-                </div>
+    <!-- карточки для телефонов -->
+    <div class="task-cards">
+        {% for task in tasks %}
+        <div class="task-card">
+            <div class="task-card-header">
+                <span class="task-name">{{ task.title }}</span>
+                <span class="task-id">{{ task.pk }}</span>
             </div>
-            <div class="header-right">
-                {% if user.is_authenticated %}
-                <span class="user-info">USER: <span>{{ user.username }}</span></span>
-                <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="auth-btn">LOGOUT</button>
-                </form>
-                {% else %}
-                <a href="{% url 'login' %}" class="auth-btn">LOGIN</a>
-                {% endif %}
-            </div>
-        </header>
-
-        <!-- боковая панель -->
-        <aside class="sidebar" id="sidebar">
-            <button class="close-btn" id="closeBtn">CLOSE</button>
-
-            <div class="panel">
-                <div class="panel-header">FILTERS</div>
-                <div class="panel-content">
-                    <form method="GET">
-                        <div class="filter-group">
-                            <label class="filter-label">CATEGORY</label>
-                            <select name="category" class="filter-select">
-                                <option value="">*ALL</option>
-                                {% for c in categories %}
-                                <option value="{{ c.id }}">{{ c.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">STATUS</label>
-                            <select name="status" class="filter-select">
-                                <option value="">*ANY</option>
-                                <option value="done">COMPLETED</option>
-                                <option value="not_done">PENDING</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">SEARCH</label>
-                            <input type="text" name="q" class="filter-input" placeholder="...">
-                        </div>
-                        <button type="submit" class="filter-btn">EXECUTE</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-header">STATISTICS</div>
-                <div class="panel-content">
-                    <div class="stats-item">
-                        <span class="stats-label">total_tasks</span>
-                        <span class="stats-value">{{ tasks|length }}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="stats-label">categories</span>
-                        <span class="stats-value">{{ categories|length }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="spacer"></div>
-
-            <div class="panel">
-                <div class="panel-header">SYSTEM</div>
-                <div class="panel-content">
-                    <div class="stats-item">
-                        <span class="stats-label">db_status</span>
-                        <span class="stats-value" style="color: #00aa88;">ONLINE</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="stats-label">session</span>
-                        <span class="stats-value">ACTIVE</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- основной блок -->
-        <main class="main">
-            <div class="content-header">
-                <span class="content-title">TASK_LIST<span class="cursor"></span></span>
-                <a href="{% url 'task_create' %}" class="create-btn">NEW_TASK</a>
-            </div>
-
-            <div class="task-list">
-                <!-- таблица для десктопа -->
-                <table class="task-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">ID</th>
-                            <th>TASK_NAME</th>
-                            <th style="width: 140px;">STATUS</th>
-                            <th style="width: 140px;">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for task in tasks %}
-                        <tr>
-                            <td><span class="task-id">{{ task.pk }}</span></td>
-                            <td><span class="task-name">{{ task.title }}</span></td>
-                            <td>
-                                {% if task.is_done %}
-                                <span class="status-badge status-done">DONE</span>
-                                {% else %}
-                                <span class="status-badge status-pending">PENDING</span>
-                                {% endif %}
-                            </td>
-                            <td class="task-actions">
-                                <a href="{% url 'task_update' task.pk %}" class="action-edit">EDIT</a>
-                                <a href="{% url 'task_delete' task.pk %}" class="action-delete">DEL</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-msg">Задач пока нет. Создайте первую!</div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <!-- карточки для телефонов -->
-                <div class="task-cards">
-                    {% for task in tasks %}
-                    <div class="task-card">
-                        <div class="task-card-header">
-                            <span class="task-name">{{ task.title }}</span>
-                            <span class="task-id">{{ task.pk }}</span>
-                        </div>
-                        {% if task.is_done %}
-                        <span class="status-badge status-done">DONE</span>
-                        {% else %}
-                        <span class="status-badge status-pending">PENDING</span>
-                        {% endif %}
-                        <div class="task-card-footer task-actions">
-                            <a href="{% url 'task_update' task.pk %}" class="action-edit">EDIT</a>
-                            <a href="{% url 'task_delete' task.pk %}" class="action-delete">DEL</a>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="empty-msg">Задач пока нет</div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- пагинация -->
-            {% if tasks.paginator %}
-            <div class="pagination">
-                {% if tasks.has_previous %}
-                <a href="?page={{ tasks.previous_page_number }}{{ params }}">&lt; PREV</a>
-                {% endif %}
-
-                <span class="pagination-info">{{ tasks.number }} / {{ tasks.paginator.num_pages }}</span>
-
-                {% if tasks.has_next %}
-                <a href="?page={{ tasks.next_page_number }}{{ params }}">NEXT &gt;</a>
-                {% endif %}
-            </div>
+            {% if task.category %}
+                <div style="color: #0088cc; font-size: 11px; margin-bottom: 8px;">{{ task.category.name }}</div>
             {% endif %}
-        </main>
-
-        <!-- футер -->
-        <footer class="footer">
-            <span><span class="status-dot"></span>CONNECTED</span>
-            <span>MODE: NORMAL</span>
-        </footer>
+            {% if task.is_done %}
+            <span class="status-badge status-done">DONE</span>
+            {% else %}
+            <span class="status-badge status-pending">PENDING</span>
+            {% endif %}
+            <div class="task-card-footer task-actions">
+                <a href="{% url 'task_update' task.pk %}" class="action-edit">EDIT</a>
+                <a href="{% url 'task_delete' task.pk %}" class="action-delete">DEL</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-msg">Задач пока нет</div>
+        {% endfor %}
     </div>
+</div>
 
-    <script>
-        // меню на мобилках
-        var menuBtn = document.getElementById('menuBtn');
-        var sidebar = document.getElementById('sidebar');
-        var overlay = document.getElementById('overlay');
-        var closeBtn = document.getElementById('closeBtn');
+<!-- пагинация -->
+{% if tasks.paginator %}
+<div class="pagination">
+    {% if tasks.has_previous %}
+    <a href="?page={{ tasks.previous_page_number }}{{ params }}">&lt; PREV</a>
+    {% endif %}
 
-        menuBtn.onclick = function() {
-            sidebar.classList.add('active');
-            overlay.classList.add('active');
-        };
+    <span class="pagination-info">{{ tasks.number }} / {{ tasks.paginator.num_pages }}</span>
 
-        closeBtn.onclick = function() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        };
-
-        overlay.onclick = function() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        };
-    </script>
-</body>
-</html>
+    {% if tasks.has_next %}
+    <a href="?page={{ tasks.next_page_number }}{{ params }}">NEXT &gt;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

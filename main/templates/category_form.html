@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <span class="content-title">
+        {% if form.instance.pk %}
+            EDIT_CATEGORY<span class="cursor"></span>
+        {% else %}
+            CREATE_CATEGORY<span class="cursor"></span>
+        {% endif %}
+    </span>
+</div>
+
+<div class="task-list" style="padding: 30px 40px; max-width: 600px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                        <span style="color: #cc4444;">*</span>
+                    {% endif %}
+                </label>
+
+                {% if field.field.widget.input_type == 'textarea' %}
+                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-textarea">{{ field.value|default:"" }}</textarea>
+                {% else %}
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input" value="{{ field.value|default:"" }}">
+                {% endif %}
+
+                {% if field.errors %}
+                    <div style="color: #cc4444; font-size: 11px; margin-top: 8px; border-left: 3px solid #cc4444; padding-left: 10px;">
+                        {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button type="submit" class="form-button">
+                {% if form.instance.pk %}
+                    SAVE_CHANGES
+                {% else %}
+                    CREATE
+                {% endif %}
+            </button>
+            <a href="{% url 'categories_list' %}" class="form-button btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">CANCEL</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

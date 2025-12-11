@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OnlyTasks{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #f0f4f8;
+            color: #1a2b3c;
+            font-size: 13px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* основной грид */
+        .wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "header header"
+                "sidebar main"
+                "footer footer";
+            min-height: 100vh;
+            gap: 1px;
+            background: #a0b4c8;
+        }
+
+        /* шапка */
+        .header {
+            grid-area: header;
+            background: #1a2b3c;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-only { color: #fff; }
+        .logo-tasks { color: #0088cc; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            color: #6a8fa8;
+            font-size: 12px;
+        }
+        .user-info span { color: #0088cc; }
+
+        .auth-btn {
+            background: none;
+            border: 1px solid #0088cc;
+            color: #0088cc;
+            padding: 6px 16px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .auth-btn:hover {
+            background: #0088cc;
+            color: #fff;
+        }
+
+        /* кнопка меню для мобилок */
+        .menu-btn {
+            display: none;
+            background: none;
+            border: 1px solid #0088cc;
+            color: #0088cc;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* сайдбар */
+        .sidebar {
+            grid-area: sidebar;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel {
+            border-bottom: 1px solid #d0dce8;
+        }
+
+        .panel-header {
+            background: #e8f0f8;
+            padding: 10px 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0088cc;
+            letter-spacing: 1px;
+            border-left: 3px solid #0088cc;
+        }
+
+        .panel-content {
+            padding: 15px;
+        }
+
+        .spacer { flex: 1; }
+
+        /* навигация */
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            border-bottom: 1px dashed #d0dce8;
+        }
+
+        .nav-menu li:last-child {
+            border-bottom: none;
+        }
+
+        .nav-menu a {
+            display: block;
+            color: #1a2b3c;
+            text-decoration: none;
+            padding: 10px 0;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #0088cc;
+            padding-left: 5px;
+        }
+
+        .nav-menu a::before {
+            content: '> ';
+            color: #0088cc;
+            margin-right: 5px;
+        }
+
+        /* фильтры */
+        .filter-group { margin-bottom: 15px; }
+
+        .filter-label {
+            display: block;
+            font-size: 10px;
+            color: #6a8fa8;
+            margin-bottom: 5px;
+        }
+        .filter-label::before {
+            content: '> ';
+            color: #0088cc;
+        }
+
+        .filter-select, .filter-input {
+            width: 100%;
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 8px 10px;
+            font-family: inherit;
+            font-size: 12px;
+            color: #1a2b3c;
+            transition: all 0.3s;
+        }
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #0088cc;
+            background: #fff;
+        }
+
+        .filter-input::placeholder { color: #a0b4c8; }
+
+        .filter-btn {
+            width: 100%;
+            background: #0088cc;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover { background: #006699; }
+        .filter-btn::before { content: '[ '; }
+        .filter-btn::after { content: ' ]'; }
+
+        /* статистика */
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #d0dce8;
+            font-size: 12px;
+        }
+        .stats-item:last-child { border-bottom: none; }
+        .stats-label { color: #6a8fa8; }
+        .stats-value { color: #0088cc; font-weight: 600; }
+
+        /* основной контент */
+        .main {
+            grid-area: main;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            background: #e8f0f8;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #d0dce8;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .content-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a2b3c;
+        }
+        .content-title::before {
+            content: '// ';
+            color: #0088cc;
+        }
+
+        /* мигающий курсор */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: #0088cc;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .create-btn {
+            background: none;
+            border: 2px solid #0088cc;
+            color: #0088cc;
+            padding: 8px 20px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .create-btn:hover {
+            background: #0088cc;
+            color: #fff;
+        }
+        .create-btn::before { content: '+ '; }
+
+        /* список задач */
+        .task-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+        }
+
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .task-table th {
+            text-align: left;
+            padding: 10px 15px;
+            background: #f5f9fc;
+            font-size: 10px;
+            font-weight: 600;
+            color: #6a8fa8;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #d0dce8;
+        }
+
+        .task-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e8f0f8;
+        }
+
+        .task-table tr:hover { background: #f5f9fc; }
+
+        .task-id {
+            color: #a0b4c8;
+            font-size: 11px;
+        }
+        .task-id::before { content: '#'; }
+
+        .task-name {
+            font-weight: 500;
+            color: #1a2b3c;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        .status-done {
+            color: #00aa88;
+            border-color: #00aa88;
+            background: #e6fff9;
+        }
+        .status-done::before { content: '[OK] '; }
+
+        .status-pending {
+            color: #cc8800;
+            border-color: #cc8800;
+            background: #fff9e6;
+        }
+        .status-pending::before { content: '[..] '; }
+
+        .task-actions a {
+            color: #6a8fa8;
+            text-decoration: none;
+            font-size: 11px;
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        .task-actions a:hover { color: #0088cc; }
+        .action-edit::before { content: '>'; }
+        .action-delete { color: #cc4444 !important; }
+        .action-delete:hover { color: #f00 !important; }
+        .action-delete::before { content: 'x'; }
+
+        .empty-msg {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0b4c8;
+        }
+
+        /* пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f5f9fc;
+            border-top: 2px solid #d0dce8;
+        }
+
+        .pagination a {
+            background: #0088cc;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 25px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .pagination a:hover { background: #006699; }
+
+        .pagination-info {
+            color: #1a2b3c;
+            font-size: 13px;
+            padding: 10px 20px;
+            background: #fff;
+            border: 1px solid #d0dce8;
+        }
+
+        /* категории сетка */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 15px 20px;
+        }
+
+        .category-card {
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 15px;
+            border-left: 3px solid #0088cc;
+            transition: all 0.3s;
+        }
+
+        .category-card:hover {
+            background: #e8f0f8;
+            border-left-color: #006699;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #1a2b3c;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .category-desc {
+            color: #6a8fa8;
+            font-size: 11px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .category-count {
+            color: #0088cc;
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .category-actions a {
+            flex: 1;
+            text-align: center;
+            padding: 6px 10px;
+            font-size: 10px;
+            text-decoration: none;
+            border: 1px solid #0088cc;
+            color: #0088cc;
+            transition: all 0.3s;
+        }
+
+        .category-actions a:hover {
+            background: #0088cc;
+            color: #fff;
+        }
+
+        .category-actions a.delete {
+            border-color: #cc4444;
+            color: #cc4444;
+        }
+
+        .category-actions a.delete:hover {
+            background: #cc4444;
+            color: #fff;
+        }
+
+        /* форма */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            color: #6a8fa8;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .form-label::before {
+            content: '> ';
+            color: #0088cc;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            color: #1a2b3c;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #0088cc;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-button {
+            background: #0088cc;
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .form-button:hover {
+            background: #006699;
+        }
+
+        .form-button::before {
+            content: '[ ';
+        }
+
+        .form-button::after {
+            content: ' ]';
+        }
+
+        .btn-secondary {
+            background: #a0b4c8 !important;
+        }
+
+        .btn-secondary:hover {
+            background: #6a8fa8 !important;
+        }
+
+        /* футер */
+        .footer {
+            grid-area: footer;
+            background: #1a2b3c;
+            color: #a0b4c8;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            gap: 30px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00cc88;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* мобильные карточки */
+        .task-cards { display: none; }
+
+        .task-card {
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .task-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .task-card-footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #d0dce8;
+        }
+
+        /* оверлей для мобильного меню */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .overlay.active { display: block; }
+
+        .close-btn {
+            display: none;
+            background: #cc4444;
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .close-btn:hover {
+            background: #bb2222;
+        }
+
+        /* адаптив */
+        @media (max-width: 900px) {
+            .wrapper {
+                grid-template-columns: 1fr;
+                grid-template-areas: "header" "main" "footer";
+            }
+
+            .sidebar {
+                display: none;
+                position: fixed;
+                top: 0; left: 0;
+                width: 300px;
+                height: 100vh;
+                z-index: 1000;
+                box-shadow: 5px 0 20px rgba(0,0,0,0.2);
+                overflow-y: auto;
+            }
+            .sidebar.active { display: flex; }
+
+            .menu-btn { display: block; }
+            .close-btn { display: block; }
+            .user-info { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .header { padding: 10px 15px; }
+            .logo { font-size: 16px; }
+            .task-list { padding: 10px 15px; }
+            .task-table { display: none; }
+            .task-cards { display: block; }
+            .categories-grid { grid-template-columns: 1fr; }
+            .content-header { padding: 10px 15px; }
+
+            .pagination {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .pagination a { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="overlay" id="overlay"></div>
+
+        <!-- шапка -->
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-btn" id="menuBtn">MENU</button>
+                <div class="logo">
+                    <span class="logo-only">Only</span><span class="logo-tasks">Tasks</span>
+                </div>
+            </div>
+            <div class="header-right">
+                {% if user.is_authenticated %}
+                <span class="user-info">USER: <span>{{ user.username }}</span></span>
+                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="auth-btn">LOGOUT</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="auth-btn">LOGIN</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- боковая панель -->
+        <aside class="sidebar" id="sidebar">
+            <button class="close-btn" id="closeBtn">CLOSE</button>
+
+            <!-- Навигация -->
+            <div class="panel">
+                <div class="panel-header">NAVIGATION</div>
+                <div class="panel-content">
+                    <ul class="nav-menu">
+                        <li>
+                            <a href="{% url 'tasks_list' %}">TASKS</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'categories_list' %}">CATEGORIES</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Фильтры (только на странице задач) -->
+            {% if request.resolver_match.url_name == 'tasks_list' %}
+            <div class="panel">
+                <div class="panel-header">FILTERS</div>
+                <div class="panel-content">
+                    <form method="GET">
+                        <div class="filter-group">
+                            <label class="filter-label">CATEGORY</label>
+                            <select name="category" class="filter-select">
+                                <option value="">*ALL</option>
+                                {% for c in categories %}
+                                <option value="{{ c.id }}" {% if request.GET.category|add:"0" == c.id %}selected{% endif %}>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">STATUS</label>
+                            <select name="status" class="filter-select">
+                                <option value="">*ANY</option>
+                                <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>COMPLETED</option>
+                                <option value="not_done" {% if request.GET.status == 'not_done' %}selected{% endif %}>PENDING</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">SEARCH</label>
+                            <input type="text" name="q" class="filter-input" placeholder="..." value="{{ request.GET.q }}">
+                        </div>
+                        <button type="submit" class="filter-btn">EXECUTE</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Статистика -->
+            <div class="panel">
+                <div class="panel-header">STATISTICS</div>
+                <div class="panel-content">
+                    <div class="stats-item">
+                        <span class="stats-label">total_tasks</span>
+                        <span class="stats-value">{% if tasks %}{{ tasks|length }}{% else %}0{% endif %}</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">categories</span>
+                        <span class="stats-value">{{ categories|length }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spacer"></div>
+
+            <!-- Система -->
+            <div class="panel">
+                <div class="panel-header">SYSTEM</div>
+                <div class="panel-content">
+                    <div class="stats-item">
+                        <span class="stats-label">db_status</span>
+                        <span class="stats-value" style="color: #00aa88;">ONLINE</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">session</span>
+                        <span class="stats-value">ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- основной блок -->
+        <main class="main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- футер -->
+        <footer class="footer">
+            <span><span class="status-dot"></span>CONNECTED</span>
+            <span>MODE: NORMAL</span>
+        </footer>
+    </div>
+
+    <script>
+        // меню на мобилках
+        var menuBtn = document.getElementById('menuBtn');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('overlay');
+        var closeBtn = document.getElementById('closeBtn');
+
+        menuBtn.onclick = function() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        };
+
+        closeBtn.onclick = function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        };
+
+        overlay.onclick = function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        };
+    </script>
+</body>
+</html>

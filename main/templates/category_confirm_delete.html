@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <span class="content-title">DELETE_CATEGORY<span class="cursor"></span></span>
+</div>
+
+<div class="task-list" style="padding: 30px 40px; max-width: 600px;">
+    <div style="background: #fff9e6; border-left: 4px solid #cc8800; padding: 20px; margin-bottom: 30px;">
+        <div style="color: #cc8800; font-weight: 600; margin-bottom: 12px; font-size: 13px;">⚠️ WARNING</div>
+        <p style="margin-bottom: 15px; line-height: 1.6;">
+            Ты уверен, что хочешь удалить категорию <strong>"{{ category.name }}"</strong>?
+        </p>
+        <div style="border-top: 1px dashed #d0dce8; padding-top: 15px; color: #1a2b3c;">
+            <div style="font-size: 12px; margin-bottom: 8px;">DELETE_TARGETS:</div>
+            <ul style="list-style: none; padding-left: 20px; font-size: 12px;">
+                <li style="margin-bottom: 5px;">→ категория "{{ category.name }}"</li>
+                <li style="margin-bottom: 5px;">→ {{ task_count }} связанных задач</li>
+            </ul>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" class="form-button" style="background: #cc4444;">CONFIRM_DELETE</button>
+            <a href="{% url 'categories_list' %}" class="form-button btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">CANCEL</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
