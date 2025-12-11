@@ -1,6 +1,216 @@
-<h1>Форма задачи</h1>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Сохранить</button>
-</form>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnlyTasks - Форма</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #f0f4f8;
+            color: #1a2b3c;
+            font-size: 13px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #1a2b3c;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .logo a { text-decoration: none; }
+        .logo-only { color: #fff; }
+        .logo-tasks { color: #0088cc; }
+
+        .back-btn {
+            color: #0088cc;
+            text-decoration: none;
+            font-size: 12px;
+            border: 1px solid #0088cc;
+            padding: 6px 16px;
+        }
+        .back-btn:hover {
+            background: #0088cc;
+            color: #fff;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .form-box {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #a0b4c8;
+        }
+
+        .form-header {
+            background: #e8f0f8;
+            padding: 15px 20px;
+            border-bottom: 1px solid #d0dce8;
+            border-left: 3px solid #0088cc;
+        }
+
+        .form-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a2b3c;
+        }
+        .form-title::before {
+            content: '// ';
+            color: #0088cc;
+        }
+
+        .form-body {
+            padding: 25px 20px;
+        }
+
+        .form-body p {
+            margin-bottom: 15px;
+        }
+
+        .form-body label {
+            display: block;
+            font-size: 11px;
+            color: #6a8fa8;
+            margin-bottom: 5px;
+        }
+        .form-body label::before {
+            content: '> ';
+            color: #0088cc;
+        }
+
+        .form-body input[type="text"],
+        .form-body input[type="number"],
+        .form-body textarea,
+        .form-body select {
+            width: 100%;
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 13px;
+            color: #1a2b3c;
+        }
+        .form-body input:focus,
+        .form-body textarea:focus,
+        .form-body select:focus {
+            outline: none;
+            border-color: #0088cc;
+        }
+
+        .form-body textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-body input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .form-footer {
+            padding: 15px 20px;
+            background: #f5f9fc;
+            border-top: 1px solid #d0dce8;
+            display: flex;
+            gap: 10px;
+        }
+
+        .submit-btn {
+            background: #0088cc;
+            border: none;
+            color: #fff;
+            padding: 10px 25px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .submit-btn:hover { background: #006699; }
+        .submit-btn::before { content: '[ '; }
+        .submit-btn::after { content: ' ]'; }
+
+        .cancel-btn {
+            background: none;
+            border: 1px solid #6a8fa8;
+            color: #6a8fa8;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 12px;
+            text-decoration: none;
+        }
+        .cancel-btn:hover {
+            border-color: #1a2b3c;
+            color: #1a2b3c;
+        }
+
+        .footer {
+            background: #1a2b3c;
+            color: #6a8fa8;
+            padding: 8px 20px;
+            font-size: 11px;
+        }
+
+        @media (max-width: 600px) {
+            .content { padding: 20px 15px; }
+            .form-body { padding: 20px 15px; }
+            .logo { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="{% url 'tasks_list' %}">
+                <span class="logo-only">Only</span><span class="logo-tasks">Tasks</span>
+            </a>
+        </div>
+        <a href="{% url 'tasks_list' %}" class="back-btn">&lt; BACK</a>
+    </header>
+
+    <div class="content">
+        <div class="form-box">
+            <div class="form-header">
+                <div class="form-title">{% if form.instance.pk %}EDIT_TASK{% else %}NEW_TASK{% endif %}</div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-body">
+                    {{ form.as_p }}
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="submit-btn">SAVE</button>
+                    <a href="{% url 'tasks_list' %}" class="cancel-btn">CANCEL</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        OnlyTasks // task management
+    </footer>
+</body>
+</html>
