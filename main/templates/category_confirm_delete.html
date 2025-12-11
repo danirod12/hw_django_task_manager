@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <span class="content-title">DELETE_CATEGORY<span class="cursor"></span></span>
+</div>
+
+<div class="task-list" style="padding: 30px 40px; max-width: 650px;">
+    <div style="background: #fff9e6; border-left: 4px solid #cc8800; padding: 20px; margin-bottom: 30px;">
+        <div style="color: #cc8800; font-weight: 600; margin-bottom: 12px; font-size: 13px;">WARNING</div>
+        <p style="margin-bottom: 15px; line-height: 1.6;">
+            Deleting category <strong>"{{ category.name }}"</strong>.
+        </p>
+
+        {% if tasks_count > 0 %}
+            <div style="border-top: 1px dashed #d0dce8; padding-top: 15px; color: #1a2b3c;">
+                <div style="font-size: 12px; margin-bottom: 12px; color: #cc8800; font-weight: 600;">
+                    This category has {{ tasks_count }} task{% if tasks_count > 1 %}s{% endif %}
+                </div>
+                <p style="font-size: 12px; color: #6a8fa8; margin-bottom: 10px;">
+                    Choose what to do with attached tasks:
+                </p>
+            </div>
+        {% else %}
+            <div style="border-top: 1px dashed #d0dce8; padding-top: 15px; color: #6a8fa8; font-size: 12px;">
+                This category has no tasks attached.
+            </div>
+        {% endif %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+            {% if tasks_count > 0 %}
+                <!-- Вариант 1: Удалить задачи -->
+                <label style="display: flex; align-items: flex-start; padding: 15px; background: #fff; border: 2px solid #d0dce8; cursor: pointer; transition: all 0.3s; border-radius: 4px;">
+                    <input type="radio" name="action" value="delete_tasks" style="margin-top: 3px; margin-right: 12px; cursor: pointer; accent-color: #cc4444;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #cc4444; font-size: 12px; margin-bottom: 4px;">DELETE ALL TASKS</div>
+                        <div style="font-size: 11px; color: #6a8fa8;">All tasks will be deleted together with this category.</div>
+                    </div>
+                </label>
+
+                <!-- Вариант 2: Открепить задачи -->
+                <label style="display: flex; align-items: flex-start; padding: 15px; background: #fff; border: 2px solid #d0dce8; cursor: pointer; transition: all 0.3s; border-radius: 4px;">
+                    <input type="radio" name="action" value="detach_tasks" checked style="margin-top: 3px; margin-right: 12px; cursor: pointer; accent-color: #0088cc;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #0088cc; font-size: 12px; margin-bottom: 4px;">UNPIN TASKS</div>
+                        <div style="font-size: 11px; color: #6a8fa8;">All tasks will lose this category but won't be deleted.</div>
+                    </div>
+                </label>
+            {% else %}
+                <input type="hidden" name="action" value="delete_tasks">
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" class="form-button" style="background: #cc4444;">CONFIRM_DELETE</button>
+            <a href="{% url 'categories_list' %}" class="form-button btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">CANCEL</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

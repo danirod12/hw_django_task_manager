@@ -174,14 +174,14 @@
             {% csrf_token %}
             <div class="login-body">
                 {% if form.errors %}
-                <div class="error-msg">Неверное имя пользователя или пароль</div>
+                <div class="error-msg">Incorrect username or password</div>
                 {% endif %}
 
                 {% if next %}
                     {% if user.is_authenticated %}
-                    <div class="error-msg">У вас нет доступа к этой странице</div>
+                    <div class="error-msg">You don't have access to this page.</div>
                     {% else %}
-                    <div class="info-msg">Для доступа нужно войти в систему</div>
+                    <div class="info-msg">Authenticate to access this page.</div>
                     {% endif %}
                 {% endif %}
 
