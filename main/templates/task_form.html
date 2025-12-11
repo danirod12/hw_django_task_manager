@@ -1,216 +1,72 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OnlyTasks - Форма</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends 'base.html' %}
 
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: #f0f4f8;
-            color: #1a2b3c;
-            font-size: 13px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+{% block content %}
+<div class="content-header">
+    <span class="content-title">
+        {% if form.instance.pk %}
+            EDIT_TASK<span class="cursor"></span>
+        {% else %}
+            NEW_TASK<span class="cursor"></span>
+        {% endif %}
+    </span>
+</div>
 
-        .header {
-            background: #1a2b3c;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+<div class="task-list" style="padding: 30px 40px; max-width: 600px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
 
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        .logo a { text-decoration: none; }
-        .logo-only { color: #fff; }
-        .logo-tasks { color: #0088cc; }
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                        <span style="color: #cc4444;">*</span>
+                    {% endif %}
+                </label>
+                
+                {% if field.field.widget.input_type == 'textarea' %}
+                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-textarea">{{ field.value|default:"" }}</textarea>
 
-        .back-btn {
-            color: #0088cc;
-            text-decoration: none;
-            font-size: 12px;
-            border: 1px solid #0088cc;
-            padding: 6px 16px;
-        }
-        .back-btn:hover {
-            background: #0088cc;
-            color: #fff;
-        }
+                {% elif field.field.widget.input_type == 'checkbox' %}
+                    <div style="margin-top: 8px;">
+                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox" {% if field.value %}checked{% endif %}>
+                        <label for="{{ field.id_for_label }}" style="display: inline; font-size: 12px; color: #1a2b3c; margin-left: 8px;">{{ field.label }}</label>
+                    </div>
 
-        .content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-        }
+                {% elif field.field.widget.input_type == 'select' %}
+                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input">
+                        <option value="">— выбрать —</option>
+                        {% for value, label in field.field.choices %}
+                            {% if value %}
+                                <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
 
-        .form-box {
-            background: #fff;
-            width: 100%;
-            max-width: 500px;
-            border: 1px solid #a0b4c8;
-        }
+                {% else %}
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input" value="{{ field.value|default:"" }}">
+                {% endif %}
 
-        .form-header {
-            background: #e8f0f8;
-            padding: 15px 20px;
-            border-bottom: 1px solid #d0dce8;
-            border-left: 3px solid #0088cc;
-        }
-
-        .form-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a2b3c;
-        }
-        .form-title::before {
-            content: '// ';
-            color: #0088cc;
-        }
-
-        .form-body {
-            padding: 25px 20px;
-        }
-
-        .form-body p {
-            margin-bottom: 15px;
-        }
-
-        .form-body label {
-            display: block;
-            font-size: 11px;
-            color: #6a8fa8;
-            margin-bottom: 5px;
-        }
-        .form-body label::before {
-            content: '> ';
-            color: #0088cc;
-        }
-
-        .form-body input[type="text"],
-        .form-body input[type="number"],
-        .form-body textarea,
-        .form-body select {
-            width: 100%;
-            background: #f5f9fc;
-            border: 1px solid #d0dce8;
-            padding: 10px 12px;
-            font-family: inherit;
-            font-size: 13px;
-            color: #1a2b3c;
-        }
-        .form-body input:focus,
-        .form-body textarea:focus,
-        .form-body select:focus {
-            outline: none;
-            border-color: #0088cc;
-        }
-
-        .form-body textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-body input[type="checkbox"] {
-            width: auto;
-            margin-right: 8px;
-        }
-
-        .form-footer {
-            padding: 15px 20px;
-            background: #f5f9fc;
-            border-top: 1px solid #d0dce8;
-            display: flex;
-            gap: 10px;
-        }
-
-        .submit-btn {
-            background: #0088cc;
-            border: none;
-            color: #fff;
-            padding: 10px 25px;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .submit-btn:hover { background: #006699; }
-        .submit-btn::before { content: '[ '; }
-        .submit-btn::after { content: ' ]'; }
-
-        .cancel-btn {
-            background: none;
-            border: 1px solid #6a8fa8;
-            color: #6a8fa8;
-            padding: 10px 20px;
-            font-family: inherit;
-            font-size: 12px;
-            text-decoration: none;
-        }
-        .cancel-btn:hover {
-            border-color: #1a2b3c;
-            color: #1a2b3c;
-        }
-
-        .footer {
-            background: #1a2b3c;
-            color: #6a8fa8;
-            padding: 8px 20px;
-            font-size: 11px;
-        }
-
-        @media (max-width: 600px) {
-            .content { padding: 20px 15px; }
-            .form-body { padding: 20px 15px; }
-            .logo { font-size: 16px; }
-        }
-    </style>
-</head>
-<body>
-    <header class="header">
-        <div class="logo">
-            <a href="{% url 'tasks_list' %}">
-                <span class="logo-only">Only</span><span class="logo-tasks">Tasks</span>
-            </a>
-        </div>
-        <a href="{% url 'tasks_list' %}" class="back-btn">&lt; BACK</a>
-    </header>
-
-    <div class="content">
-        <div class="form-box">
-            <div class="form-header">
-                <div class="form-title">{% if form.instance.pk %}EDIT_TASK{% else %}NEW_TASK{% endif %}</div>
+                {% if field.errors %}
+                    <div style="color: #cc4444; font-size: 11px; margin-top: 8px; border-left: 3px solid #cc4444; padding-left: 10px;">
+                        {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
+        {% endfor %}
 
-            <form method="POST">
-                {% csrf_token %}
-                <div class="form-body">
-                    {{ form.as_p }}
-                </div>
-                <div class="form-footer">
-                    <button type="submit" class="submit-btn">SAVE</button>
-                    <a href="{% url 'tasks_list' %}" class="cancel-btn">CANCEL</a>
-                </div>
-            </form>
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button type="submit" class="form-button">
+                {% if form.instance.pk %}
+                    SAVE_CHANGES
+                {% else %}
+                    CREATE_TASK
+                {% endif %}
+            </button>
+            <a href="{% url 'tasks_list' %}" class="form-button btn-secondary" style="text-decoration: none; display: inline-block; text-align: center;">CANCEL</a>
         </div>
-    </div>
-
-    <footer class="footer">
-        OnlyTasks // task management
-    </footer>
-</body>
-</html>
+    </form>
+</div>
+{% endblock %}
