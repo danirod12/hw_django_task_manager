@@ -22,7 +22,7 @@ def tasks_list(request):
     elif status == "not_done":
         tasks = tasks.filter(is_done=False)
 
-    paginator = Paginator(tasks, 5)  # 5 задач на страницу
+    paginator = Paginator(tasks, 8)  # 8 задач на страницу
     page = request.GET.get("page")
     tasks = paginator.get_page(page)
 
