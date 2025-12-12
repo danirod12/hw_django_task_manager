@@ -619,6 +619,185 @@
             background: #bb2222;
         }
 
+        /* Приоритеты */
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        .priority-high {
+            background: rgba(204, 68, 68, 0.15);
+            color: #cc4444;
+            border: 1px solid rgba(204, 68, 68, 0.3);
+        }
+
+        .priority-medium {
+            background: rgba(204, 156, 68, 0.15);
+            color: #cc9c44;
+            border: 1px solid rgba(204, 156, 68, 0.3);
+        }
+
+        .priority-low {
+            background: rgba(68, 170, 68, 0.15);
+            color: #44aa44;
+            border: 1px solid rgba(68, 170, 68, 0.3);
+        }
+
+        /* Фильтры */
+        .filters {
+            background: rgba(0, 50, 80, 0.3);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 136, 204, 0.2);
+        }
+
+        .filters .form-input {
+            background: rgba(0, 30, 50, 0.5);
+            border: 1px solid rgba(0, 136, 204, 0.3);
+            color: #e0f0ff;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .filters .form-input:focus {
+            border-color: #0088cc;
+            outline: none;
+        }
+
+        /* Детальная страница задачи */
+        .task-detail-card {
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #0088cc;
+        }
+
+        .task-detail-header {
+            margin-bottom: 15px;
+        }
+
+        .task-detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a2b3c;
+            margin-top: 5px;
+        }
+
+        .task-detail-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meta-label {
+            font-size: 10px;
+            color: #6a8fa8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-size: 12px;
+            color: #1a2b3c;
+        }
+
+        .task-detail-description {
+            border-top: 1px dashed #d0dce8;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .task-detail-description p {
+            margin-top: 8px;
+            color: #1a2b3c;
+            line-height: 1.6;
+        }
+
+        /* Комментарии */
+        .comments-section {
+            margin-top: 20px;
+        }
+
+        .comments-header {
+            margin-bottom: 15px;
+        }
+
+        .comment-form-wrapper {
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt {
+            background: #f5f9fc;
+            border: 1px solid #d0dce8;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #6a8fa8;
+            font-size: 12px;
+        }
+
+        .login-prompt a {
+            color: #0088cc;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .comment-item {
+            background: #fff;
+            border: 1px solid #d0dce8;
+            padding: 15px;
+            border-left: 3px solid #a0b4c8;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #0088cc;
+            font-size: 12px;
+        }
+
+        .comment-date {
+            font-size: 11px;
+            color: #a0b4c8;
+        }
+
+        .comment-text {
+            color: #1a2b3c;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .comment-actions {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e8f0f8;
+        }
+
         /* адаптив */
         @media (max-width: 900px) {
             .wrapper {
@@ -705,37 +884,46 @@
             </div>
 
             <!-- Фильтры (только на странице задач) -->
-            {% if request.resolver_match.url_name == 'tasks_list' %}
-            <div class="panel">
-                <div class="panel-header">FILTERS</div>
-                <div class="panel-content">
-                    <form method="GET">
-                        <div class="filter-group">
-                            <label class="filter-label">CATEGORY</label>
-                            <select name="category" class="filter-select">
-                                <option value="">*ALL</option>
-                                {% for c in categories %}
-                                <option value="{{ c.id }}" {% if request.GET.category|add:"0" == c.id %}selected{% endif %}>{{ c.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">STATUS</label>
-                            <select name="status" class="filter-select">
-                                <option value="">*ANY</option>
-                                <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>COMPLETED</option>
-                                <option value="not_done" {% if request.GET.status == 'not_done' %}selected{% endif %}>PENDING</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">SEARCH</label>
-                            <input type="text" name="q" class="filter-input" placeholder="..." value="{{ request.GET.q }}">
-                        </div>
-                        <button type="submit" class="filter-btn">EXECUTE</button>
-                    </form>
-                </div>
+{% if request.resolver_match.url_name == 'tasks_list' %}
+<div class="panel">
+    <div class="panel-header">FILTERS</div>
+    <div class="panel-content">
+        <form method="GET">
+            <div class="filter-group">
+                <label class="filter-label">CATEGORY</label>
+                <select name="category" class="filter-select">
+                    <option value="">*ALL</option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}" {% if request.GET.category|add:"0" == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            {% endif %}
+            <div class="filter-group">
+                <label class="filter-label">STATUS</label>
+                <select name="status" class="filter-select">
+                    <option value="">*ANY</option>
+                    <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>COMPLETED</option>
+                    <option value="not_done" {% if request.GET.status == 'not_done' %}selected{% endif %}>PENDING</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">PRIORITY</label>
+                <select name="priority" class="filter-select">
+                    <option value="">*ANY</option>
+                    {% for value, label in priority_choices %}
+                    <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">SEARCH</label>
+                <input type="text" name="q" class="filter-input" placeholder="..." value="{{ request.GET.q }}">
+            </div>
+            <button type="submit" class="filter-btn">EXECUTE</button>
+        </form>
+    </div>
+</div>
+{% endif %}
 
             <!-- Статистика -->
             <div class="panel">

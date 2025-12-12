@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <span class="content-title">TASK_DETAIL<span class="cursor"></span></span>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'task_update' task.pk %}" class="create-btn" style="border-color: #cc9c44; color: #cc9c44;">EDIT</a>
+        <a href="{% url 'tasks_list' %}" class="create-btn">BACK</a>
+    </div>
+</div>
+
+<div class="task-list" style="padding: 20px;">
+    <!-- Информация о задаче -->
+    <div class="task-detail-card">
+        <div class="task-detail-header">
+            <span class="task-id">{{ task.pk }}</span>
+            <h2 class="task-detail-title">{{ task.title }}</h2>
+        </div>
+
+        <div class="task-detail-meta">
+            <div class="meta-item">
+                <span class="meta-label">STATUS:</span>
+                {% if task.is_done %}
+                    <span class="status-badge status-done">DONE</span>
+                {% else %}
+                    <span class="status-badge status-pending">PENDING</span>
+                {% endif %}
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">PRIORITY:</span>
+                {% if task.priority == 'high' %}
+                    <span class="priority-badge priority-high">HIGH</span>
+                {% elif task.priority == 'medium' %}
+                    <span class="priority-badge priority-medium">MEDIUM</span>
+                {% else %}
+                    <span class="priority-badge priority-low">LOW</span>
+                {% endif %}
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">CATEGORY:</span>
+                <span class="meta-value">{{ task.category.name|default:"—" }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">EXECUTOR:</span>
+                <span class="meta-value">{{ task.executor.username|default:"—" }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">DEADLINE:</span>
+                <span class="meta-value">{{ task.deadline|date:"d.m.Y"|default:"—" }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">CREATED:</span>
+                <span class="meta-value">{{ task.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+        </div>
+
+        {% if task.description %}
+        <div class="task-detail-description">
+            <span class="meta-label">DESCRIPTION:</span>
+            <p>{{ task.description }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- секция комментариев -->
+    <div class="comments-section">
+        <div class="comments-header">
+            <span class="panel-header" style="display: inline-block; margin-bottom: 0;">COMMENTS ({{ comments.count }})</span>
+        </div>
+
+        <!-- форма добавления комментария -->
+        {% if user.is_authenticated %}
+        <div class="comment-form-wrapper">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <textarea name="text" class="form-textarea" placeholder="Enter your comment..." rows="3" required>{{ form.text.value|default:"" }}</textarea>
+                    {% if form.text.errors %}
+                        <div style="color: #cc4444; font-size: 11px; margin-top: 5px;">
+                            {% for error in form.text.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="form-button">ADD_COMMENT</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="login-prompt">
+            <a href="{% url 'login' %}">Login</a> to send your comment
+        </div>
+        {% endif %}
+
+        <!-- список комментариев -->
+        <div class="comments-list">
+            {% for comment in comments %}
+            <div class="comment-item">
+                <div class="comment-header">
+                    <span class="comment-author">{{ comment.author.username }}</span>
+                    <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="comment-text">{{ comment.text }}</div>
+                {% if user == comment.author or user.is_staff %}
+                <div class="comment-actions">
+                    <a href="{% url 'comment_delete' comment.pk %}" class="action-delete">DELETE</a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-msg">No comments yet!</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
