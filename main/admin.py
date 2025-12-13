@@ -19,7 +19,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
     def get_task_count(self, obj):
         return obj.tasks.count()
-    get_task_count.short_description = 'Кол-во задач'
+    get_task_count.short_description = 'Tasks amount'
 
 
 @admin.register(Task)

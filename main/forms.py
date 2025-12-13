@@ -33,11 +33,11 @@ class TaskForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Название задачи'
+                'placeholder': 'Task name'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Описание',
+                'placeholder': 'Description',
                 'rows': 3
             }),
             'deadline': forms.DateInput(attrs={
