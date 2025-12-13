@@ -14,7 +14,8 @@
                 <th style="width: 60px;">ID</th>
                 <th>TASK_NAME</th>
                 <th style="width: 100px;">CATEGORY</th>
-                <th style="width: 140px;">STATUS</th>
+                <th style="width: 100px;">PRIORITY</th>
+                <th style="width: 100px;">STATUS</th>
                 <th style="width: 140px;">ACTIONS</th>
             </tr>
         </thead>
@@ -22,12 +23,21 @@
             {% for task in tasks %}
             <tr>
                 <td><span class="task-id">{{ task.pk }}</span></td>
-                <td><span class="task-name">{{ task.title }}</span></td>
+                <td><a href="{% url 'task_detail' task.pk %}" class="task-name" style="text-decoration: none; color: #1a2b3c;">{{ task.title }}</a></td>
                 <td>
                     {% if task.category %}
                         <span style="color: #0088cc; font-size: 11px;">{{ task.category.name }}</span>
                     {% else %}
                         <span style="color: #a0b4c8; font-size: 11px;">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.priority == 'high' %}
+                        <span class="priority-badge priority-high">HIGH</span>
+                    {% elif task.priority == 'medium' %}
+                        <span class="priority-badge priority-medium">MED</span>
+                    {% else %}
+                        <span class="priority-badge priority-low">LOW</span>
                     {% endif %}
                 </td>
                 <td>
@@ -44,7 +54,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <div class="empty-msg">Задач пока нет. Создайте первую!</div>
                 </td>
             </tr>
@@ -57,17 +67,27 @@
         {% for task in tasks %}
         <div class="task-card">
             <div class="task-card-header">
-                <span class="task-name">{{ task.title }}</span>
+                <a href="{% url 'task_detail' task.pk %}" class="task-name" style="text-decoration: none; color: #1a2b3c;">{{ task.title }}</a>
                 <span class="task-id">{{ task.pk }}</span>
             </div>
             {% if task.category %}
                 <div style="color: #0088cc; font-size: 11px; margin-bottom: 8px;">{{ task.category.name }}</div>
             {% endif %}
-            {% if task.is_done %}
-            <span class="status-badge status-done">DONE</span>
-            {% else %}
-            <span class="status-badge status-pending">PENDING</span>
-            {% endif %}
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% if task.priority == 'high' %}
+                    <span class="priority-badge priority-high">HIGH</span>
+                {% elif task.priority == 'medium' %}
+                    <span class="priority-badge priority-medium">MED</span>
+                {% else %}
+                    <span class="priority-badge priority-low">LOW</span>
+                {% endif %}
+
+                {% if task.is_done %}
+                <span class="status-badge status-done">DONE</span>
+                {% else %}
+                <span class="status-badge status-pending">PENDING</span>
+                {% endif %}
+            </div>
             <div class="task-card-footer task-actions">
                 <a href="{% url 'task_update' task.pk %}" class="action-edit">EDIT</a>
                 <a href="{% url 'task_delete' task.pk %}" class="action-delete">DEL</a>

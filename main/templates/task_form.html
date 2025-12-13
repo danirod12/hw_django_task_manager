@@ -35,7 +35,7 @@
 
                 {% elif field.field.widget.input_type == 'select' %}
                     <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input">
-                        <option value="">— выбрать —</option>
+                        <option value="">— choose —</option>
                         {% for value, label in field.field.choices %}
                             {% if value %}
                                 <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>

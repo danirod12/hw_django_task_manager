@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Task, Category
-from .forms import TaskForm, CategoryForm
+from django.http import HttpResponseForbidden
+from .models import Task, Category, Comment
+from .forms import TaskForm, CategoryForm, CommentForm
 
 
 # ============= ЗАДАЧИ =============
@@ -12,12 +13,15 @@ def tasks_list(request):
 
     category = request.GET.get("category")
     status = request.GET.get("status")
+    priority = request.GET.get("priority")
     query = request.GET.get("q")
 
     if query:
         tasks = tasks.filter(title__icontains=query)
     if category:
         tasks = tasks.filter(category__id=category)
+    if priority:
+        tasks = tasks.filter(priority=priority)
 
     if status == "done":
         tasks = tasks.filter(is_done=True)
@@ -33,6 +37,8 @@ def tasks_list(request):
         params += f"&category={category}"
     if status is not None:
         params += f"&status={status}"
+    if priority is not None:
+        params += f"&priority={priority}"
     if query is not None:
         params += f"&q={query}"
 
@@ -42,9 +48,52 @@ def tasks_list(request):
         {
             "tasks": tasks,
             "categories": Category.objects.all(),
+            "priority_choices": Task.PRIORITY_CHOICES,
             "params": params,
         },
     )
+
+
+def task_detail(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    comments = task.comments.all()
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.task = task
+            comment.author = request.user
+            comment.save()
+            return redirect('task_detail', pk=pk)
+    else:
+        form = CommentForm()
+
+    return render(request, 'task_detail.html', {
+        'task': task,
+        'comments': comments,
+        'form': form,
+    })
+
+
+@login_required
+def comment_delete(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    task_pk = comment.task.pk
+
+    if comment.author != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You have no permission to delete this comment.")
+
+    if request.method == 'POST':
+        comment.delete()
+        return redirect('task_detail', pk=task_pk)
+
+    return render(request, 'comment_confirm_delete.html', {
+        'comment': comment,
+    })
 
 
 @login_required
@@ -140,7 +189,6 @@ def category_delete(request, pk):
         # Удаляем саму категорию
         category.delete()
         return redirect('categories_list')
-
     # Считаем количество задач в категории
     tasks_count = category.tasks.count()
 
