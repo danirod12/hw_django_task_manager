@@ -9,11 +9,11 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите название категории'
+                'placeholder': 'Enter category name'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите описание (опционально)',
+                'placeholder': 'Enter description (optional)',
                 'rows': 3
             }),
         }
@@ -22,7 +22,7 @@ class CategoryForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         existing = Category.objects.filter(name=name).exclude(pk=self.instance.pk)
         if existing.exists():
-            raise forms.ValidationError('Категория с таким названием уже существует')
+            raise forms.ValidationError('Category with this name already exists')
         return name
 
 
