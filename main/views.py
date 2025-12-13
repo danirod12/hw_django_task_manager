@@ -135,8 +135,10 @@ def task_delete(request, pk):
 # ============= КАТЕГОРИИ =============
 
 def categories_list(request):
+    """Функция 2.1.2.2 — Просмотр категорий"""
     categories = Category.objects.all()
 
+    # Для каждой категории добавляем количество задач
     for category in categories:
         category.task_count = category.tasks.count()
 
@@ -145,6 +147,7 @@ def categories_list(request):
 
 @login_required
 def category_create(request):
+    """Функция 2.1.2.1 — Создание категории"""
     if request.method == "POST":
         form = CategoryForm(request.POST)
         if form.is_valid():
@@ -157,6 +160,7 @@ def category_create(request):
 
 @login_required
 def category_update(request, pk):
+    """Функция 2.1.2.3 — Редактирование категории"""
     category = get_object_or_404(Category, pk=pk)
     if request.method == "POST":
         form = CategoryForm(request.POST, instance=category)
@@ -176,13 +180,16 @@ def category_delete(request, pk):
         action = request.POST.get('action')
 
         if action == 'delete_tasks':
+            # Удаляем все задачи в этой категории
             Task.objects.filter(category=category).delete()
         elif action == 'detach_tasks':
+            # Открепляем задачи (убираем категорию)
             Task.objects.filter(category=category).update(category=None)
 
+        # Удаляем саму категорию
         category.delete()
         return redirect('categories_list')
-
+    # Считаем количество задач в категории
     tasks_count = category.tasks.count()
 
     return render(request, "category_confirm_delete.html", {
